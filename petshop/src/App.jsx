@@ -1,8 +1,22 @@
-import { useState } from 'react'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+import api from "./api";
+import { useAuth0 } from "@auth0/auth0-react";
+import Dashboard from "./components/Dashboard";
+import LoginScreen from "./components/LoginScreen";
+import FullscreenGradient from "./components/FullscreenGradient";
+import Btn from "./components/Btn";
 
 export default function App() {
-  const { isLoading, isAuthenticated, user, loginWithRedirect, logout, getAccessTokenSilently, error } = useAuth0();
+  const {
+    isLoading,
+    isAuthenticated,
+    user,
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+    error,
+  } = useAuth0();
   const [token, setToken] = useState(null);
   const [syncing, setSyncing] = useState(false);
 
@@ -15,7 +29,9 @@ export default function App() {
         const t = await getAccessTokenSilently();
         setToken(t);
         await api.syncUser({ nome: user.name, email: user.email }, t);
-      } catch (e) { console.error("Erro ao sincronizar usuário:", e); }
+      } catch (e) {
+        console.error("Erro ao sincronizar usuário:", e);
+      }
       setSyncing(false);
     })();
   }, [isAuthenticated, getAccessTokenSilently, user]);
@@ -28,7 +44,9 @@ export default function App() {
       <FullscreenGradient>
         <div className="text-white text-center space-y-4">
           <div className="text-5xl animate-spin">⏳</div>
-          <p className="font-semibold text-lg">{syncing ? "Sincronizando conta..." : "Carregando..."}</p>
+          <p className="font-semibold text-lg">
+            {syncing ? "Sincronizando conta..." : "Carregando..."}
+          </p>
         </div>
       </FullscreenGradient>
     );
@@ -39,9 +57,13 @@ export default function App() {
       <FullscreenGradient>
         <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center">
           <p className="text-5xl mb-4">❌</p>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Erro de autenticação</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            Erro de autenticação
+          </h2>
           <p className="text-red-600 text-sm mb-6">{error.message}</p>
-          <Btn onClick={() => loginWithRedirect()} className="w-full">Tentar novamente</Btn>
+          <Btn onClick={() => loginWithRedirect()} className="w-full">
+            Tentar novamente
+          </Btn>
         </div>
       </FullscreenGradient>
     );
@@ -50,12 +72,15 @@ export default function App() {
   if (!isAuthenticated) {
     return (
       <LoginScreen
-        onLogin={() => loginWithRedirect({ authorizationParams: { screen_hint: "login" } })}
-        onRegister={() => loginWithRedirect({ authorizationParams: { screen_hint: "signup" } })}
+        onLogin={() =>
+          loginWithRedirect({ authorizationParams: { screen_hint: "login" } })
+        }
+        onRegister={() =>
+          loginWithRedirect({ authorizationParams: { screen_hint: "signup" } })
+        }
       />
     );
   }
 
   return <Dashboard token={token} user={user} onLogout={handleLogout} />;
 }
-Remix de Sistema de Gerenciamento PetShop - Claude

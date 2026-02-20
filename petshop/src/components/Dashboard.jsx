@@ -1,3 +1,5 @@
+import { useCallback, useState } from "react";
+
 function Dashboard({ token, user, onLogout }) {
   const [tab, setTab] = useState(TABS.CLIENTES);
   const [clientes, setClientes] = useState([]);
