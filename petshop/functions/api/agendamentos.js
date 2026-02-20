@@ -1,31 +1,37 @@
+const H = { "Content-Type": "application/json" };
+
 export async function onRequestGet({ request, env }) {
-  const user = request.user;
   const { results } = await env.DB.prepare(
-    `SELECT a.*, p.nome as pet_nome
-     FROM agendamentos a JOIN pets p ON a.pet_id = p.id
-     WHERE a.usuario_id = ? ORDER BY a.data DESC, a.hora DESC`,
+    `
+    SELECT a.*, p.nome AS pet_nome
+    FROM agendamentos a
+    JOIN pets p ON a.pet_id = p.id
+    WHERE a.usuario_id = ?
+    ORDER BY a.data DESC, a.hora DESC
+  `,
   )
-    .bind(user.sub)
+    .bind(request.user.sub)
     .all();
-  return Response.json(results);
+  return new Response(JSON.stringify(results), { headers: H });
 }
 
 export async function onRequestPost({ request, env }) {
-  const user = request.user;
   const { pet_id, servico, data, hora, observacoes } = await request.json();
 
-  // Regra: máximo 5 pets por horário no serviço de banho e tosa
+  // Regra de negócio: máximo 5 pets por horário para banho e tosa
   if (servico === "banho-tosa") {
-    const { count } = await env.DB.prepare(
-      `SELECT COUNT(*) as count FROM agendamentos
+    const row = await env.DB.prepare(
+      `SELECT COUNT(*) AS count FROM agendamentos
        WHERE servico='banho-tosa' AND data=? AND hora=?`,
     )
       .bind(data, hora)
       .first();
-    if (count >= 5) {
-      return Response.json(
-        { error: "Limite de 5 pets por horário atingido para Banho e Tosa." },
-        { status: 409 },
+    if (row.count >= 5) {
+      return new Response(
+        JSON.stringify({
+          error: "Limite de 5 pets por horário atingido para Banho e Tosa.",
+        }),
+        { status: 409, headers: H },
       );
     }
   }
@@ -34,28 +40,26 @@ export async function onRequestPost({ request, env }) {
     `INSERT INTO agendamentos (pet_id, usuario_id, servico, data, hora, observacoes)
      VALUES (?, ?, ?, ?, ?, ?)`,
   )
-    .bind(pet_id, user.sub, servico, data, hora, observacoes)
+    .bind(pet_id, request.user.sub, servico, data, hora, observacoes)
     .run();
-  return Response.json({ id: meta.last_row_id });
+  return new Response(JSON.stringify({ id: meta.last_row_id }), { headers: H });
 }
 
 export async function onRequestPut({ request, env }) {
-  const user = request.user;
   const { id, servico, data, hora, status, observacoes } = await request.json();
   await env.DB.prepare(
     `UPDATE agendamentos SET servico=?, data=?, hora=?, status=?, observacoes=?
      WHERE id=? AND usuario_id=?`,
   )
-    .bind(servico, data, hora, status, observacoes, id, user.sub)
+    .bind(servico, data, hora, status, observacoes, id, request.user.sub)
     .run();
-  return Response.json({ ok: true });
+  return new Response(JSON.stringify({ ok: true }), { headers: H });
 }
 
 export async function onRequestDelete({ request, env }) {
-  const user = request.user;
   const { id } = await request.json();
   await env.DB.prepare(`DELETE FROM agendamentos WHERE id=? AND usuario_id=?`)
-    .bind(id, user.sub)
+    .bind(id, request.user.sub)
     .run();
-  return Response.json({ ok: true });
+  return new Response(JSON.stringify({ ok: true }), { headers: H });
 }

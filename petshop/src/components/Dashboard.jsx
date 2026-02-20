@@ -1,4 +1,17 @@
 import { useCallback, useState } from "react";
+import { api } from "../services/api";
+import { useEffect } from "react";
+import ClientesTab from "./ClientesTab";
+import PetsTab from "./PetsTab";
+import AgendamentosTab from "./AgendamentosTab";
+import Alert from "./Alert";
+import Btn from "./Btn";
+
+const TABS = {
+  CLIENTES: "clientes",
+  PETS: "pets",
+  AGENDA: "agendamentos",
+};
 
 function Dashboard({ token, user, onLogout }) {
   const [tab, setTab] = useState(TABS.CLIENTES);

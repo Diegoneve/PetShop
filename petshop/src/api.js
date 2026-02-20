@@ -17,7 +17,6 @@ async function req(method, path, body, token) {
 export const api = {
   // Usuários
   syncUser: (body, token) => req("POST", "/usuarios", body, token),
-  getUser: (token) => req("GET", "/usuarios", null, token),
 
   // Clientes
   getClientes: (token) => req("GET", "/clientes", null, token),

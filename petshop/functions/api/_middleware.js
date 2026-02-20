@@ -1,7 +1,6 @@
-// Valida o JWT do Auth0 em todas as rotas /api/*
 export async function onRequest({ request, env, next }) {
   const auth = request.headers.get("Authorization") || "";
-  const token = auth.replace("Bearer ", "");
+  const token = auth.replace("Bearer ", "").trim();
 
   if (!token) {
     return new Response(JSON.stringify({ error: "Token ausente" }), {
@@ -11,19 +10,25 @@ export async function onRequest({ request, env, next }) {
   }
 
   try {
-    // Busca as chaves públicas do Auth0
+    const [headerB64, payloadB64, sigB64] = token.split(".");
+
+    const header = JSON.parse(atob(headerB64));
+    const payload = JSON.parse(atob(payloadB64));
+
+    // Verifica expiração
+    if (payload.exp && Date.now() / 1000 > payload.exp) {
+      throw new Error("Token expirado");
+    }
+
+    // Busca chaves públicas do Auth0
     const jwksRes = await fetch(
       `https://${env.AUTH0_DOMAIN}/.well-known/jwks.json`,
     );
     const { keys } = await jwksRes.json();
-
-    // Decodifica o header do JWT para pegar o kid
-    const [headerB64] = token.split(".");
-    const header = JSON.parse(atob(headerB64));
     const jwk = keys.find((k) => k.kid === header.kid);
-    if (!jwk) throw new Error("Chave não encontrada");
+    if (!jwk) throw new Error("Chave pública não encontrada");
 
-    // Importa a chave pública e verifica o token
+    // Importa chave e verifica assinatura
     const key = await crypto.subtle.importKey(
       "jwk",
       jwk,
@@ -32,7 +37,6 @@ export async function onRequest({ request, env, next }) {
       ["verify"],
     );
 
-    const [, payloadB64, sigB64] = token.split(".");
     const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
     const sig = Uint8Array.from(
       atob(sigB64.replace(/-/g, "+").replace(/_/g, "/")),
@@ -45,10 +49,9 @@ export async function onRequest({ request, env, next }) {
       sig,
       data,
     );
-    if (!valid) throw new Error("Token inválido");
+    if (!valid) throw new Error("Assinatura inválida");
 
-    // Adiciona payload decodificado ao contexto
-    const payload = JSON.parse(atob(payloadB64));
+    // Injeta payload no request para uso nas functions
     request.user = payload;
 
     return next();
