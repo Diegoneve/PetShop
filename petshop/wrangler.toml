@@ -5,4 +5,4 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "petshop-db"
-database_id = "COLE_AQUI_O_DATABASE_ID"
+database_id = "d7f1d6fa-6272-486c-a7a1-2977f765c489"
