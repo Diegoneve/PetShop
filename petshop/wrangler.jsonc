@@ -1,0 +1,68 @@
+{
+  // ─── Identificação do projeto ─────────────────────────────────────────────
+  "name": "petshop",
+  "compatibility_date": "2024-01-01",
+
+  // ─── Cloudflare Pages ─────────────────────────────────────────────────────
+  // Diretório de saída do build (npm run build)
+  "pages_build_output_dir": "dist",
+
+  // ─── Banco de dados D1 ────────────────────────────────────────────────────
+  "d1_databases": [
+    {
+      "binding": "DB", // nome usado no código: env.DB
+      "database_name": "petshop-db", // nome do banco no Cloudflare
+      "database_id": "d7f1d6fa-6272-486c-a7a1-2977f765c489", // gerado pelo: wrangler d1 create petshop-db
+      "migrations_dir": "migrations", // pasta com os arquivos .sql
+    },
+  ],
+
+  // ─── Variáveis de ambiente ────────────────────────────────────────────────
+  "vars": {
+    "AUTH0_DOMAIN": "diegoneve.us.auth0.com",
+    "AUTH0_CLIENT_ID": "Rbs6oSmgy5jIYw5ds57Gg2p38vaR2Cpk",
+  },
+
+  // ─── Ambiente de desenvolvimento local ───────────────────────────────────
+  "dev": {
+    "port": 5173, // porta local do wrangler pages dev
+    "local_protocol": "http",
+  },
+
+  // ─── Ambientes separados (staging / produção) ─────────────────────────────
+  "env": {
+    // Ambiente de staging — banco e variáveis separados
+    "staging": {
+      "name": "petshop-staging",
+      "vars": {
+        "AUTH0_DOMAIN": "diegoneve.us.auth0.com",
+        "AUTH0_CLIENT_ID": "Rbs6oSmgy5jIYw5ds57Gg2p38vaR2Cpk",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "petshop-db-staging",
+          "database_id": "COLE_AQUI_O_DATABASE_ID_STAGING",
+          "migrations_dir": "migrations",
+        },
+      ],
+    },
+
+    // Ambiente de produção — pode sobrescrever qualquer config acima
+    "production": {
+      "name": "petshop-production",
+      "vars": {
+        "AUTH0_DOMAIN": "diegoneve.us.auth0.com",
+        "AUTH0_CLIENT_ID": "Rbs6oSmgy5jIYw5ds57Gg2p38vaR2Cpk",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "petshop-db",
+          "database_id": "d7f1d6fa-6272-486c-a7a1-2977f765c489",
+          "migrations_dir": "migrations",
+        },
+      ],
+    },
+  },
+}
