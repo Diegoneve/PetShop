@@ -6,12 +6,14 @@ import "./index.css";
 
 const AUTH0_DOMAIN = "diegoneve.us.auth0.com";
 const AUTH0_CLIENT_ID = "Rbs6oSmgy5jIYw5ds57Gg2p38vaR2Cpk";
+const AUTH0_CLIENT_SECRET = import.meta.env.VITE_AUTH0_CLIENT_SECRET;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Auth0Provider
       domain={AUTH0_DOMAIN}
       clientId={AUTH0_CLIENT_ID}
+      clientsecret={AUTH0_CLIENT_SECRET}
       authorizationParams={{ redirect_uri: window.location.origin }}
     >
       <App />
